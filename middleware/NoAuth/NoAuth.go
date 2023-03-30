@@ -2,7 +2,6 @@ package NoAuth
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/neverTanking/TiktokByGo/db"
 	"net/http"
 	"strconv"
 )
@@ -15,7 +14,7 @@ func NoAuthMiddleWare() gin.HandlerFunc {
 		}
 		//用户不存在
 		if strUserId == "" {
-			c.JSON(http.StatusOK, db.CommonResponse{
+			c.JSON(http.StatusOK, CommonResponse{
 				StatusCode: 1,
 				StatusMsg:  "请求user_id失败",
 			})
@@ -23,7 +22,7 @@ func NoAuthMiddleWare() gin.HandlerFunc {
 		}
 		userId, err := strconv.ParseInt(strUserId, 10, 64)
 		if err != nil {
-			c.JSON(http.StatusOK, db.CommonResponse{
+			c.JSON(http.StatusOK, CommonResponse{
 				StatusCode: 1,
 				StatusMsg:  "请求user_id失败",
 			})

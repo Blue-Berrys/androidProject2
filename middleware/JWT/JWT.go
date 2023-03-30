@@ -1,10 +1,10 @@
 package JWT
 
 import (
+	"androidProject2/config"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/neverTanking/TiktokByGo/config"
 	"net/http"
 	"strconv"
 	"time"
@@ -21,20 +21,18 @@ type MyClaims struct {
 	jwt.StandardClaims
 }
 
-// GetToken从username和password变成Token
+// GetToken从userid变成Token
 
-func GetToken(userid uint, username string, password string) (string, error) {
+func GetToken(userid uint) (string, error) {
 	cnt++
 	//创建一个我们自己的声明
 	myClaims := &MyClaims{
-		UserId:   userid,
-		UserName: username,
-		PassWord: password,
+		UserId: userid,
 		StandardClaims: jwt.StandardClaims{
 			NotBefore: time.Now().Unix() - 60,               //什么时间生效
 			ExpiresAt: time.Now().Add(2 * time.Hour).Unix(), //只有2小时的有效时间
-			Issuer:    "neverTaking",                        //签发者
-			Subject:   "TiktokByGo",                         //主题
+			Issuer:    "HJJ_ZJK_XJX_DCH",                    //签发者
+			Subject:   "androidProject2",                    //主题
 			Id:        strconv.Itoa(cnt),                    //编号
 		},
 	}
@@ -129,8 +127,6 @@ func JWTMiddleware() gin.HandlerFunc {
 		//}
 
 		c.Set("UserId", claim.UserId)
-		c.Set("UserName", claim.UserName)
-		c.Set("UserPassword", claim.PassWord)
 		c.Next()
 
 		//Next继续执行后面的Handler
