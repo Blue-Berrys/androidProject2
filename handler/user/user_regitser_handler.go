@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"androidProject2/config"
 	service "androidProject2/service/user"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -36,7 +37,10 @@ func UserRegisterHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, UserRegisterResponse{
-		CommonResponse:   CommonResponse{StatusCode: 0},
+		CommonResponse: CommonResponse{
+			StatusCode: 0,
+			StatusMsg:  config.SUCCESS_MSG,
+		},
 		RegisterResponse: registerResponse,
 	})
 }

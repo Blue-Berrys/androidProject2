@@ -1,7 +1,7 @@
 package router
 
 import (
-	handler "androidProject2/handler/user_login"
+	handler "androidProject2/handler/user"
 	"androidProject2/middleware/Bcrypt"
 	"androidProject2/middleware/JWT"
 	"github.com/gin-gonic/gin"

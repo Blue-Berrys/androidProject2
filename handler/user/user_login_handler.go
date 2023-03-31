@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"androidProject2/config"
 	service "androidProject2/service/user"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -39,7 +40,7 @@ func UserLoginHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, UserLoginResponse{
 		CommonResponse: CommonResponse{
 			StatusCode: 0,
-			StatusMsg:  "Success",
+			StatusMsg:  config.SUCCESS_MSG,
 		},
 		LoginResponse: userLoginResponse,
 	})
