@@ -2,22 +2,22 @@ package router
 
 import (
 	handler "androidProject2/handler/user"
-	"androidProject2/middleware/Bcrypt"
 	"androidProject2/middleware/JWT"
+	model "androidProject2/model/db"
 	"github.com/gin-gonic/gin"
-	"github.com/neverTanking/TiktokByGo/db"
 )
 
 func InitRouter(r *gin.Engine) *gin.Engine {
 	// public directory is used to serve static resources
-	db.Init()
+	model.Init()
 	r.Static("/static", "./static")
 
 	apiRouter := r.Group("/androidProject2")
 
 	// basic apis
-	apiRouter.POST("/user/register/", Bcrypt.EncryptionMiddleWare(), handler.UserLoginHandler)
-	apiRouter.POST("/user/login/", Bcrypt.EncryptionMiddleWare(), handler.UserRegisterHandler)
+	//apiRouter.GET("/user/register/", Bcrypt.EncryptionMiddleWare(), handler.UserRegisterHandler)
+	apiRouter.POST("/user/register/", handler.UserRegisterHandler)
+	apiRouter.POST("/user/login/", handler.UserLoginHandler)
 	apiRouter.GET("/user/info/")
 	apiRouter.POST("/publish/action/")
 	apiRouter.GET("/publish/list/")

@@ -4,7 +4,6 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model             //自带的id是自增id
-	UserId          int64  //用户申请的账号
 	UserName        string //用户昵称
 	Password        string
 	Signature       string //个性签名

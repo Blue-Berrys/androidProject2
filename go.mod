@@ -5,7 +5,6 @@ go 1.19
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.0
-	github.com/neverTanking/TiktokByGo v0.0.0-20230304103427-2e85cc291085
 	gorm.io/gorm v1.24.6
 )
 

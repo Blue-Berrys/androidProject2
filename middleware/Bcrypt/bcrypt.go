@@ -21,3 +21,10 @@ func EncryptionMiddleWare() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func QueryEqualEncryptAndPassword(encryptPassword, password string) bool {
+	if err := bcrypt.CompareHashAndPassword([]byte(encryptPassword), []byte(password)); err != nil {
+		return false
+	}
+	return true
+}

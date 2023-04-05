@@ -75,7 +75,7 @@ func (q *QueryUserRegisterFlow) prepareData() error {
 		return err
 	}
 	q.token = token
-	q.userId = user.UserId
+	q.userId = int64(user.ID)
 	return nil
 }
 

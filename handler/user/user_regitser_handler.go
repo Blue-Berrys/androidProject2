@@ -3,6 +3,7 @@ package handler
 import (
 	"androidProject2/config"
 	service "androidProject2/service/user"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -13,20 +14,11 @@ type UserRegisterResponse struct {
 }
 
 func UserRegisterHandler(c *gin.Context) {
-	username := c.Query("username")
-	rawVal, _ := c.Get("password")
-	password, ok := rawVal.(string)
-	if !ok {
-		c.JSON(http.StatusOK, UserRegisterResponse{
-			CommonResponse: CommonResponse{
-				StatusCode: 1,
-				StatusMsg:  "密码解析出错",
-			},
-		})
-		return
-	}
-	registerResponse, err := service.NewQueryUserRegister(username, password)
+	username := c.PostForm("username")
+	password := c.PostForm("password")
 
+	registerResponse, err := service.NewQueryUserRegister(username, password)
+	fmt.Println(registerResponse)
 	if err != nil {
 		c.JSON(http.StatusOK, UserRegisterResponse{
 			CommonResponse: CommonResponse{
@@ -36,6 +28,7 @@ func UserRegisterHandler(c *gin.Context) {
 		})
 		return
 	}
+	fmt.Println("9999")
 	c.JSON(http.StatusOK, UserRegisterResponse{
 		CommonResponse: CommonResponse{
 			StatusCode: 0,

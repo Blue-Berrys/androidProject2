@@ -3,6 +3,7 @@ package handler
 import (
 	"androidProject2/config"
 	service "androidProject2/service/user"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -13,17 +14,9 @@ type UserLoginResponse struct {
 }
 
 func UserLoginHandler(c *gin.Context) {
-	username := c.Query("username")
-	rawPassword, _ := c.Get("password")
-	password, ok := rawPassword.(string)
-	if !ok {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			CommonResponse: CommonResponse{
-				StatusCode: 1,
-				StatusMsg:  "密码解析错误",
-			},
-		})
-	}
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+
 	userLoginResponse, err := service.QueryUserLogin(username, password)
 
 	//用户不存在返回对应的错误
@@ -34,14 +27,12 @@ func UserLoginHandler(c *gin.Context) {
 				StatusMsg:  err.Error(),
 			},
 		})
+		return
 	}
-
+	fmt.Println(userLoginResponse)
 	//用户存在，返回相应的id和token
 	c.JSON(http.StatusOK, UserLoginResponse{
-		CommonResponse: CommonResponse{
-			StatusCode: 0,
-			StatusMsg:  config.SUCCESS_MSG,
-		},
-		LoginResponse: userLoginResponse,
+		CommonResponse: CommonResponse{StatusCode: 0, StatusMsg: config.SUCCESS_MSG},
+		LoginResponse:  userLoginResponse,
 	})
 }

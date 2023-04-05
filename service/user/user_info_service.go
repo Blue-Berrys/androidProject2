@@ -55,10 +55,11 @@ func (q *QueryUserInfoFlow) prepareData() error {
 		return err
 	}
 	//设置信息
+	q.data.Id = q.Id
+	q.data.Name = dbUser.UserName
 	q.data.Avatar = dbUser.Avatar
 	q.data.Signature = dbUser.Signature
 	q.data.BackGroundImage = dbUser.BackgroundImage
-	q.data.UserId = dbUser.UserId
 	q.data.WorkCount = dbUser.WorkCount
 	return nil
 }

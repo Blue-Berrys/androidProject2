@@ -5,6 +5,7 @@ import (
 	model2 "androidProject2/model/db"
 	model "androidProject2/model/user"
 	"errors"
+	"fmt"
 )
 
 var (
@@ -65,10 +66,13 @@ func (q *QueryUserLoginFlow) prepareData() error {
 	//调用models查数据库
 	userLoginDAO := model.NewUserDao()
 	var login model2.User
-	if err := userLoginDAO.QueryUserLogin(q.username, q.password, &login); err != nil {
+	fmt.Println("名字：", q.username)
+	if err := userLoginDAO.QueryUserLogin(q.username, &login); err != nil {
 		return err
 	}
-	q.userid = login.UserId
+	//if ok := Bcrypt.QueryEqualEncryptAndPassword(login.Password, q.password); !ok {
+	//	return errors.New("密码错误")
+	//}
 
 	//登录成功，颁发token
 	token, err := JWT.GetToken(uint(q.userid))
@@ -76,6 +80,7 @@ func (q *QueryUserLoginFlow) prepareData() error {
 		return err
 	}
 	q.token = token
+	q.userid = int64(login.ID)
 	return nil
 }
 

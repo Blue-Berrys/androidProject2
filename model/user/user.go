@@ -3,7 +3,6 @@ package model
 import (
 	model "androidProject2/model/db"
 	"errors"
-	"github.com/neverTanking/TiktokByGo/db"
 	"gorm.io/gorm"
 	"log"
 	"sync"
@@ -37,12 +36,12 @@ func (u *UserDao) AddUserInfo(userinfo *model.User) error {
 
 }
 
-func (u *UserDao) QueryUserLogin(username, password string, login *model.User) error {
+func (u *UserDao) QueryUserLogin(username string, login *model.User) error {
 	if login == nil {
 		return errors.New("登录信息结构体指针为空")
 	}
 	return model.DB.Transaction(func(tx *gorm.DB) error {
-		if err := model.DB.Where("username=? and password=?", username, password).First(&login).Error; err != nil {
+		if err := model.DB.Where("user_name=?", username).First(&login).Error; err != nil {
 			return err
 		}
 		if login.ID == 0 {
@@ -54,7 +53,7 @@ func (u *UserDao) QueryUserLogin(username, password string, login *model.User) e
 
 func (u *UserDao) QueryUserExistByUserName(username string) bool {
 	var user model.User
-	if err := model.DB.Where("username=?", username).First(&user).Error; err != nil {
+	if err := model.DB.Where("user_name=?", username).First(&user).Error; err != nil {
 		log.Println(err)
 	}
 	if user.ID == 0 {
@@ -75,7 +74,7 @@ func (u *UserDao) QueryUserExistByUserId(userId uint) bool {
 }
 
 func (u *UserDao) QueryUserInfoById(userId uint, user *model.User) error {
-	return db.DB.Transaction(func(tx *gorm.DB) error {
+	return model.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("id = ?", userId).First(&user).Error; err != nil {
 			return err
 		}
