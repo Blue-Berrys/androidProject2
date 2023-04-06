@@ -26,8 +26,8 @@ type Comment struct {
 
 type Like struct {
 	gorm.Model
-	UserId    int64
-	ContextId int64
+	UserId        int64
+	FriendsChatId int64
 }
 
 type FriendsChat struct { //这一条朋友圈

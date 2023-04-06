@@ -1,4 +1,4 @@
-package friendschat
+package model
 
 import (
 	model "androidProject2/model/db"
@@ -48,7 +48,7 @@ func (q *FriendsChatDao) QueryFriendsChatByUserId(userId uint, info *[]*model.Fr
 // 查询整个朋友圈所有内容
 func (q *FriendsChatDao) QueryAllFriendsChat(info *[]*model.FriendsChat) error {
 	return model.DB.Transaction(func(tx *gorm.DB) error {
-		if err := model.DB.Find(&model.FriendsChat{}).Error; err != nil {
+		if err := model.DB.Find(info).Error; err != nil {
 			return err
 		}
 		return nil

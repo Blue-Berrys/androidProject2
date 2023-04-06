@@ -4,7 +4,7 @@ import (
 	"androidProject2/config"
 	"androidProject2/middleware/minio"
 	model2 "androidProject2/model/db"
-	"androidProject2/model/friendschat"
+	model3 "androidProject2/model/friendschat"
 	model "androidProject2/model/user"
 	"androidProject2/util"
 	"errors"
@@ -98,7 +98,7 @@ func (q *PublishActionFlow) prepareData() error {
 		ResImageUrl = ""
 	}
 	//插入FriendsChat
-	var FriendsChatDao = friendschat.NewFriendsChatDao()
+	var FriendsChatDao = model3.NewFriendsChatDao()
 	var friendschat = model2.FriendsChat{
 		UserId:   q.UserId,
 		Content:  q.Content,
