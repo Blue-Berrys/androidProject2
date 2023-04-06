@@ -1,6 +1,7 @@
 package router
 
 import (
+	handler2 "androidProject2/handler/FriendsChat"
 	handler "androidProject2/handler/user"
 	"androidProject2/middleware/JWT"
 	model "androidProject2/model/db"
@@ -18,8 +19,8 @@ func InitRouter(r *gin.Engine) *gin.Engine {
 	//apiRouter.GET("/user/register/", Bcrypt.EncryptionMiddleWare(), handler.UserRegisterHandler)
 	apiRouter.POST("/user/register/", handler.UserRegisterHandler)
 	apiRouter.POST("/user/login/", handler.UserLoginHandler)
-	apiRouter.GET("/user/info/")
-	apiRouter.POST("/publish/action/")
+	apiRouter.POST("/user/info/", JWT.JWTMiddleware(), handler.UserInfoHandler)
+	apiRouter.POST("/publish/action/", JWT.JWTMiddleware(), handler2.PublishActionHandler)
 	apiRouter.GET("/publish/list/")
 
 	// extra apis - I

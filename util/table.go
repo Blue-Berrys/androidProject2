@@ -4,10 +4,19 @@ package util
 
 type User struct {
 	Id              uint   `json:"id"`
-	UserId          int64  `json:"user_id"`
 	Name            string `json:"name"`
-	Avatar          string `json:"avatar,omitempty"`
-	BackGroundImage string `json:"background_image,omitempty"`
-	Signature       string `json:"signature,omitempty"`
+	Avatar          string `json:"avatar"`
+	BackGroundImage string `json:"background_image"`
+	Signature       string `json:"signature"`
 	WorkCount       int64  `json:"work_count"`
+}
+
+type FriendsChat struct {
+	Id            uint `json:"id"`
+	User          `json:"user"`
+	ImageUrl      string `json:"image_url"`
+	FavoriteCount int64  `json:"favorite_count"`
+	IsFavorite    bool   `json:"is_favorite"`
+	Content       string `json:"content"`
+	CreateDate    string `json:"create_date"`
 }

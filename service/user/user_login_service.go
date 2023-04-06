@@ -1,6 +1,7 @@
 package service
 
 import (
+	"androidProject2/middleware/Bcrypt"
 	"androidProject2/middleware/JWT"
 	model2 "androidProject2/model/db"
 	model "androidProject2/model/user"
@@ -13,8 +14,8 @@ var (
 )
 
 type LoginResponse struct {
-	userId int64  `json:"user_id"`
-	token  string `json:"token"`
+	UserId int64  `json:"user_id"`
+	Token  string `json:"token"`
 }
 
 type QueryUserLoginFlow struct {
@@ -70,15 +71,16 @@ func (q *QueryUserLoginFlow) prepareData() error {
 	if err := userLoginDAO.QueryUserLogin(q.username, &login); err != nil {
 		return err
 	}
-	//if ok := Bcrypt.QueryEqualEncryptAndPassword(login.Password, q.password); !ok {
-	//	return errors.New("密码错误")
-	//}
+	if ok := Bcrypt.QueryEqualEncryptAndPassword(login.Password, q.password); !ok {
+		return errors.New("密码错误")
+	}
 
 	//登录成功，颁发token
-	token, err := JWT.GetToken(uint(q.userid))
+	token, err := JWT.GetToken(login.ID)
 	if err != nil {
 		return err
 	}
+
 	q.token = token
 	q.userid = int64(login.ID)
 	return nil
@@ -86,8 +88,8 @@ func (q *QueryUserLoginFlow) prepareData() error {
 
 func (q *QueryUserLoginFlow) packData() error {
 	q.data = &LoginResponse{
-		userId: q.userid,
-		token:  q.token,
+		UserId: q.userid,
+		Token:  q.token,
 	}
 	return nil
 }

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"androidProject2/config"
 	model "androidProject2/model/db"
 	"errors"
 	"gorm.io/gorm"
@@ -76,6 +77,17 @@ func (u *UserDao) QueryUserExistByUserId(userId uint) bool {
 func (u *UserDao) QueryUserInfoById(userId uint, user *model.User) error {
 	return model.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("id = ?", userId).First(&user).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (u *UserDao) UpdateUserInfo(user *model.User, userId uint, signature string, avatar string, background_image string) error {
+	avatar = config.PlayUrlPrefix + avatar + ".jpg"
+	background_image = config.PlayUrlPrefix + background_image + ".jpg"
+	return model.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&user).Where("id=?", userId).Updates(map[string]interface{}{"signature": signature, "avatar": avatar, "background_image": background_image}).Error; err != nil {
 			return err
 		}
 		return nil

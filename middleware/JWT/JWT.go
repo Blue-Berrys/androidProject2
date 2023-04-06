@@ -69,13 +69,12 @@ func TokenToClaim(tokenStr string) (*MyClaims, bool) {
 
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenStr := c.Query("token") //请求url里的token参数值
+		tokenStr := c.Query("token") //请求query里的token参数值
 		if tokenStr == "" {
-			tokenStr = c.PostForm("token") //请求表单里的token参数值
+			tokenStr = c.PostForm("token") //请求body里的token参数值
 		}
 		//用户不存在
 		if tokenStr == "" {
-
 			c.JSON(http.StatusOK, CommonResponse{
 				config.USERNOTFOUND,
 				"用户不存在",

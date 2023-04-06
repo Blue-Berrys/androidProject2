@@ -1,6 +1,7 @@
 package service
 
 import (
+	"androidProject2/middleware/Bcrypt"
 	"androidProject2/middleware/JWT"
 	model2 "androidProject2/model/db"
 	model "androidProject2/model/user"
@@ -8,8 +9,8 @@ import (
 )
 
 type RegisterResponse struct {
-	userId int64  `json:"user_id"`
-	token  string `json:"token"`
+	UserId int64  `json:"user_id"`
+	Token  string `json:"token"`
 }
 
 type QueryUserRegisterFlow struct {
@@ -63,6 +64,8 @@ func (q *QueryUserRegisterFlow) prepareData() error {
 		return errors.New("用户名已存在，请重新输入用户名")
 	}
 
+	q.password = Bcrypt.EncryptionByPassword(q.password)
+
 	//增加这个用户
 	user := model2.User{UserName: q.username, Password: q.password}
 	if err := userRegisterDao.AddUserInfo(&user); err != nil {
@@ -81,8 +84,8 @@ func (q *QueryUserRegisterFlow) prepareData() error {
 
 func (q *QueryUserRegisterFlow) packData() error {
 	q.data = &RegisterResponse{
-		userId: q.userId,
-		token:  q.token,
+		UserId: q.userId,
+		Token:  q.token,
 	}
 	return nil
 }

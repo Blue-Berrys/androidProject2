@@ -7,7 +7,7 @@ import (
 
 // 测试从username和password变成tokenstr
 func TestGetToken(t *testing.T) {
-	userid := uint(10098)
+	userid := uint(17)
 	tokenStr, err := GetToken(userid)
 	if err != nil {
 		fmt.Println("Test GetToken Failed:", err)
@@ -23,4 +23,7 @@ func TestGetToken(t *testing.T) {
 	fmt.Println(claim.UserId)
 }
 
-//JWTMiddleware用apifox测
+// JWTMiddleware用apifox测
+func TestJWTMiddleware(t *testing.T) {
+
+}

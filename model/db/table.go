@@ -32,6 +32,7 @@ type Like struct {
 
 type FriendsChat struct { //这一条朋友圈
 	gorm.Model
+	UserId   uint
 	Content  string //内容
 	ImageUrl string //图片地址
 
