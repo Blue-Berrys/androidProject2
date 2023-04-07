@@ -15,8 +15,8 @@ type FriendsChat struct {
 	Id            uint `json:"id"`
 	User          `json:"user"`
 	ImageUrl      string `json:"image_url"`
-	FavoriteCount int64  `json:"favorite_count"`
-	IsFavorite    bool   `json:"is_favorite"`
+	FavoriteCount int64  `json:"favorite_count,omitempty"`
+	IsFavorite    bool   `json:"is_favorite,omitempty"`
 	Content       string `json:"content"`
 	CreateDate    string `json:"create_date"`
 }

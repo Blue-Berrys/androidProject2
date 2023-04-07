@@ -2,6 +2,7 @@ package router
 
 import (
 	handler2 "androidProject2/handler/FriendsChat"
+	handler3 "androidProject2/handler/like"
 	handler "androidProject2/handler/user"
 	"androidProject2/middleware/JWT"
 	model "androidProject2/model/db"
@@ -24,7 +25,7 @@ func InitRouter(r *gin.Engine) *gin.Engine {
 	apiRouter.POST("/publish/list/", JWT.JWTMiddleware(), handler2.PublishListHandler)
 
 	// extra apis - I
-	apiRouter.POST("/favorite/action/", JWT.JWTMiddleware())
+	apiRouter.POST("/favorite/action/", JWT.JWTMiddleware(), handler3.LikeActionHandler)
 
 	apiRouter.POST("/comment/action/", JWT.JWTMiddleware())
 	apiRouter.GET("/comment/list/", JWT.JWTMiddleware())

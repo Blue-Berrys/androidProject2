@@ -1,18 +1,17 @@
 package service
 
 import (
-	"androidProject2/cache/Redis"
+	"androidProject2/config"
 	model2 "androidProject2/model/db"
 	model3 "androidProject2/model/friendschat"
-	model4 "androidProject2/model/like"
 	model "androidProject2/model/user"
 	"androidProject2/util"
 	"errors"
-	"fmt"
+	"strings"
 )
 
 type PublishListResponse struct {
-	FriendsChatList []*util.FriendsChat `json:"friendschat"`
+	FriendsChatList []*util.FriendsChat `json:"friendschat,omitempty"`
 }
 
 type PublishListFlow struct {
@@ -85,38 +84,29 @@ func (q *PublishListFlow) prepareData() error {
 			BackGroundImage: dbUser.BackgroundImage,
 			Avatar:          dbUser.Avatar,
 		}
-		//先用Redis查这个视频点赞次数
-		var RedisDao = Redis.NewRedisDao()
-		num := 0
-		Redisnum, err := RedisDao.GetLikeNumByfriendschatId(FriendsChat.ID)
-		var LikeDao = model4.NewLikeDao()
-		if err != nil {
-			//找不到去Like表里找
-			Sqlnum, err := LikeDao.QueryLenFavorVideoListByVideoId(int64(FriendsChat.ID))
-			if err != nil {
-				return err
+		Fields := strings.Fields(FriendsChat.ImageUrl)
+		ImageUrl := ""
+		for i, field := range Fields {
+			if i == 0 {
+				ImageUrl = config.Miniourl + field
+			} else {
+				ImageUrl += " " + config.Miniourl + field
 			}
-			num = Sqlnum
-		} else {
-			num = Redisnum
 		}
-		//查询本人是否点赞这个朋友圈
-		isLike := LikeDao.IsLikeByUserIdAndVideoId(q.UserId, FriendsChat.ID)
-
 		oneFriendsChat := &util.FriendsChat{
-			Id:            FriendsChat.ID,
-			User:          *modelUser,
-			ImageUrl:      FriendsChat.ImageUrl,
-			FavoriteCount: int64(num),
-			IsFavorite:    isLike,
+			Id:         FriendsChat.ID,
+			User:       *modelUser,
+			ImageUrl:   ImageUrl,
+			Content:    FriendsChat.Content,
+			CreateDate: FriendsChat.CreatedAt.Format("01-02 15:04:05"),
 		}
-		fmt.Println(oneFriendsChat)
+		q.data = append(q.data, oneFriendsChat)
 	}
 
 	return nil
 }
 
 func (q *PublishListFlow) packData() error {
-
+	q.PublishListResponse = &PublishListResponse{FriendsChatList: q.data}
 	return nil
 }

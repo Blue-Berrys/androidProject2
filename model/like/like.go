@@ -24,7 +24,7 @@ func NewLikeDao() *LikeDao {
 
 // 判断是否存在userId点赞了FriendschatId
 // 找不到就是没点赞
-func (u *LikeDao) IsLikeByUserIdAndVideoId(userId uint, FriendschatId uint) bool {
+func (u *LikeDao) IsLikeByUserIdAndFriendschatId(userId uint, FriendschatId uint) bool {
 	var like model.Like
 	model.DB.Where("user_id = ?", userId).Where("friends_chat_id = ?", FriendschatId).First(&like)
 	if like.ID == 0 {
@@ -37,7 +37,7 @@ func (u *LikeDao) IsLikeByUserIdAndVideoId(userId uint, FriendschatId uint) bool
 func (u *LikeDao) AddOneLikeByFriendschatIdAndUserId(FriendschatId, UserId uint) error {
 	var like = &model.Like{FriendsChatId: int64(FriendschatId), UserId: int64(UserId)}
 	return model.DB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.First(&like).Error; err != nil {
+		if err := tx.Create(&like).Error; err != nil {
 			return err
 		}
 		return nil
@@ -47,6 +47,7 @@ func (u *LikeDao) AddOneLikeByFriendschatIdAndUserId(FriendschatId, UserId uint)
 // 减少一个赞
 func (u *LikeDao) SubOneLikeByFriendschatIdAndUserId(FriendschatId, UserId uint) error {
 	return model.DB.Transaction(func(tx *gorm.DB) error {
+		//软删除
 		if err := tx.Where("friends_chat_id=?", FriendschatId).Where("user_id=?", UserId).Delete(&model.Like{}).Error; err != nil {
 			return err
 		}
@@ -55,7 +56,7 @@ func (u *LikeDao) SubOneLikeByFriendschatIdAndUserId(FriendschatId, UserId uint)
 }
 
 // 查看视频点赞总数
-func (u *LikeDao) QueryLenFavorVideoListByVideoId(FriendschatId int64) (int, error) {
+func (u *LikeDao) QueryLenFavorFriendschatListByFriendschatId(FriendschatId int64) (int, error) {
 	var likeList *[]*model.Like
 	err := model.DB.Where("FriendschatId=?", FriendschatId).Find(&likeList).Error
 	if err != nil {

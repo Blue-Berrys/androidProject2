@@ -52,6 +52,7 @@ func (q *PublishListHandlerStruct) ParseParameter() error {
 		return errors.New("ParseUserId Failed") //创建错误
 	}
 	SeenIdStr := q.PostForm("user_id")
+	log.Println("SeenIdStr的值：", SeenIdStr)
 	seenId, err := strconv.ParseInt(SeenIdStr, 10, 64)
 	if err != nil {
 		return errors.New("传入的user_id不是整型")
