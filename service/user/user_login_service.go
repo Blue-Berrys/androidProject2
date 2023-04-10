@@ -69,14 +69,14 @@ func (q *QueryUserLoginFlow) prepareData() error {
 	var login model2.User
 	fmt.Println("名字：", q.username)
 	if err := userLoginDAO.QueryUserLogin(q.username, &login); err != nil {
-		return err
+		return errors.New("用户名错误")
 	}
 	if ok := Bcrypt.QueryEqualEncryptAndPassword(login.Password, q.password); !ok {
 		return errors.New("密码错误")
 	}
 
 	//登录成功，颁发token
-	token, err := JWT.GetToken(login.ID)
+	token, err := JWT.GetToken(login.ID, q.password)
 	if err != nil {
 		return err
 	}

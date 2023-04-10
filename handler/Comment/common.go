@@ -1,4 +1,4 @@
-package model
+package handler
 
 type CommonResponse struct {
 	StatusCode int32  `json:"status_code"`

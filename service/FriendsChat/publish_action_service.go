@@ -1,14 +1,16 @@
 package service
 
 import (
+	"androidProject2/cache/minio"
 	"androidProject2/config"
-	"androidProject2/middleware/minio"
 	model2 "androidProject2/model/db"
 	model3 "androidProject2/model/friendschat"
 	model "androidProject2/model/user"
 	"androidProject2/util"
 	"errors"
+	"log"
 	"mime/multipart"
+	"sync"
 )
 
 type PublishActionResponse struct {
@@ -50,53 +52,93 @@ func (q *PublishActionFlow) Do() (*PublishActionResponse, error) {
 }
 
 func (q *PublishActionFlow) checkNum() error {
-	//查action_type是否只有1或2
-	if q.ActionType != 1 && q.ActionType != 2 {
-		return errors.New("action_type不是1和2，输入错误")
-	}
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	errChan := make(chan error, 3)
+	defer close(errChan)
+
+	go func() {
+		defer wg.Done()
+		//查action_type是否只有1或2
+		if q.ActionType != 1 && q.ActionType != 2 {
+			errStr := "action_type不是1和2，输入错误"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
 	//查数据库，这个id是否存在
-	var UserDao = model.NewUserDao()
-	if q.UserId == 0 || !UserDao.QueryUserExistByUserId(q.UserId) {
-		return errors.New("UserId用户不存在")
+	go func() {
+		defer wg.Done()
+		var UserDao = model.NewUserDao()
+		if q.UserId == 0 || !UserDao.QueryUserExistByUserId(q.UserId) {
+			errStr := "UserId用户不存在"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
+
 	return nil
 }
 
 func (q *PublishActionFlow) prepareData() error {
-	//根据id查询用户信息
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	errChan := make(chan error, 2)
+	defer close(errChan)
+
+	var modelUser *util.User
+	var dbUser = model2.User{}
 	var UserDao = model.NewUserDao()
-	dbUser := model2.User{}
-	if err := UserDao.QueryUserInfoById(q.UserId, &dbUser); err != nil {
-		return err
-	}
-	//构造model.user
-	modelUser := &util.User{
-		Id:              dbUser.ID,
-		Name:            dbUser.UserName,
-		Signature:       dbUser.Signature,
-		WorkCount:       dbUser.WorkCount,
-		BackGroundImage: dbUser.BackgroundImage,
-		Avatar:          dbUser.Avatar,
-	}
-	//增加朋友圈记录
-	var ResImageUrl string
-	if q.ActionType == 1 { //有图片
-		for i, image := range q.Images {
-			if err := minio.ImageToMinio(image, q.ImageName[i]); err != nil {
-				return err
-			}
-			if i == 0 {
-				q.ImageUrl = config.PlayUrlPrefix + q.ImageName[i] + ".jpg"
-				ResImageUrl = config.Miniourl + config.PlayUrlPrefix + q.ImageName[i] + ".jpg"
-			} else {
-				q.ImageUrl += " " + config.PlayUrlPrefix + q.ImageName[i] + ".jpg"
-				ResImageUrl += " " + config.Miniourl + config.PlayUrlPrefix + q.ImageName[i] + ".jpg"
-			}
+	go func() {
+		defer wg.Done()
+		//根据id查询用户信息
+		if err := UserDao.QueryUserInfoById(q.UserId, &dbUser); err != nil {
+			log.Println(err)
+			errChan <- err
 		}
-	} else {
-		q.ImageUrl = ""
-		ResImageUrl = ""
-	}
+		//构造model.user
+		modelUser = &util.User{
+			Id:              dbUser.ID,
+			Name:            dbUser.UserName,
+			Signature:       dbUser.Signature,
+			WorkCount:       dbUser.WorkCount,
+			BackGroundImage: dbUser.BackgroundImage,
+			Avatar:          dbUser.Avatar,
+		}
+	}()
+
+	var ResImageUrl string
+	go func() {
+		defer wg.Done()
+		//增加朋友圈记录
+		if q.ActionType == 1 { //有图片
+			for i, image := range q.Images {
+				if err := minio.ImageToMinio(image, q.ImageName[i]); err != nil {
+					log.Println(err)
+					errChan <- err
+				}
+				if i == 0 {
+					q.ImageUrl = config.PlayUrlPrefix + q.ImageName[i] + ".jpg"
+					ResImageUrl = config.Miniourl + config.PlayUrlPrefix + q.ImageName[i] + ".jpg"
+				} else {
+					q.ImageUrl += " " + config.PlayUrlPrefix + q.ImageName[i] + ".jpg"
+					ResImageUrl += " " + config.Miniourl + config.PlayUrlPrefix + q.ImageName[i] + ".jpg"
+				}
+			}
+		} else {
+			q.ImageUrl = ""
+			ResImageUrl = ""
+		}
+	}()
+	wg.Wait()
+
 	//插入FriendsChat
 	var FriendsChatDao = model3.NewFriendsChatDao()
 	var friendschat = model2.FriendsChat{
@@ -110,13 +152,16 @@ func (q *PublishActionFlow) prepareData() error {
 
 	//构造返回Json
 	q.data = &util.FriendsChat{
-		Id:            friendschat.ID,
-		User:          *modelUser,
-		ImageUrl:      ResImageUrl,
-		FavoriteCount: 0,
-		IsFavorite:    false,
-		Content:       q.Content,
-		CreateDate:    friendschat.CreatedAt.Format("01-02 15:04:05"),
+		Id:         friendschat.ID,
+		User:       *modelUser,
+		ImageUrl:   ResImageUrl,
+		Content:    q.Content,
+		CreateDate: friendschat.CreatedAt.Format("01-02 15:04:05"),
+	}
+	//给User表中WorkCount作品数+1
+	workCount := dbUser.WorkCount
+	if err := UserDao.AddOneWorkCountByUserId(&dbUser, dbUser.ID, workCount+1); err != nil {
+		return err
 	}
 	return nil
 }

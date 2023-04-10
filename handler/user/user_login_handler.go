@@ -2,7 +2,6 @@ package handler
 
 import (
 	"androidProject2/config"
-	"androidProject2/model"
 	service "androidProject2/service/user"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -10,7 +9,7 @@ import (
 )
 
 type UserLoginResponse struct {
-	model.CommonResponse
+	CommonResponse
 	*service.LoginResponse
 }
 
@@ -22,7 +21,7 @@ func UserLoginHandler(c *gin.Context) {
 	//用户不存在返回对应的错误
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			CommonResponse: model.CommonResponse{
+			CommonResponse: CommonResponse{
 				StatusCode: 1,
 				StatusMsg:  err.Error(),
 			},
@@ -32,7 +31,7 @@ func UserLoginHandler(c *gin.Context) {
 	fmt.Println(userLoginResponse)
 	//用户存在，返回相应的id和token
 	c.JSON(http.StatusOK, UserLoginResponse{
-		CommonResponse: model.CommonResponse{StatusCode: 0, StatusMsg: config.SUCCESS_MSG},
+		CommonResponse: CommonResponse{StatusCode: 0, StatusMsg: config.SUCCESS_MSG},
 		LoginResponse:  userLoginResponse,
 	})
 }

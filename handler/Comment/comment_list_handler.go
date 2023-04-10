@@ -2,7 +2,7 @@ package handler
 
 import (
 	"androidProject2/config"
-	service "androidProject2/service/FriendsChat"
+	service "androidProject2/service/Comment"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -11,31 +11,31 @@ import (
 	"sync"
 )
 
-type PublishListResponses struct {
+type CommentListResponses struct {
 	CommonResponse
-	*service.PublishListResponse
+	*service.CommentListResponse
 }
 
-type PublishListHandlerStruct struct {
+type CommentListHandlerStruct struct {
 	*gin.Context
-	UserId uint
-	SeenId uint
+	UserId        uint
+	FriendsChatId uint
 }
 
-func PublishListHandler(c *gin.Context) {
-	NewPublishListHandler(c).Do()
+func CommentListHandler(c *gin.Context) {
+	NewCommentListHandler(c).Do()
 }
 
-func NewPublishListHandler(c *gin.Context) *PublishListHandlerStruct {
-	return &PublishListHandlerStruct{Context: c}
+func NewCommentListHandler(c *gin.Context) *CommentListHandlerStruct {
+	return &CommentListHandlerStruct{Context: c}
 }
 
-func (q *PublishListHandlerStruct) Do() {
+func (q *CommentListHandlerStruct) Do() {
 	if err := q.ParseParameter(); err != nil {
 		q.SendError(err.Error())
 		return
 	}
-	info, err := service.PublishList(q.UserId, q.SeenId)
+	info, err := service.CommentList(q.UserId, q.FriendsChatId)
 	if err != nil {
 		q.SendError(err.Error())
 		return
@@ -43,12 +43,13 @@ func (q *PublishListHandlerStruct) Do() {
 	q.SendOk(info)
 }
 
-func (q *PublishListHandlerStruct) ParseParameter() error {
+func (q *CommentListHandlerStruct) ParseParameter() error {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
 	errChan := make(chan error, 2)
 	defer close(errChan)
+
 	go func() {
 		defer wg.Done()
 		//获取user_id
@@ -64,20 +65,18 @@ func (q *PublishListHandlerStruct) ParseParameter() error {
 	}()
 
 	go func() {
-		wg.Done()
-		SeenIdStr := q.PostForm("user_id")
-		log.Println("SeenIdStr的值：", SeenIdStr)
-		seenId, err := strconv.ParseInt(SeenIdStr, 10, 64)
+		defer wg.Done()
+		FriendsChatIdStr := q.PostForm("friendschat_id")
+		FriendsChatId, err := strconv.ParseInt(FriendsChatIdStr, 10, 64)
 		if err != nil {
-			errStr := "传入的user_id不是整型"
+			errStr := "friendschat_id不是整型"
 			log.Println(errStr)
 			errChan <- errors.New(errStr)
 		}
-		q.SeenId = uint(seenId)
+		q.FriendsChatId = uint(FriendsChatId)
 	}()
 
 	wg.Wait()
-
 	if len(errChan) > 0 {
 		return <-errChan
 	}
@@ -85,19 +84,19 @@ func (q *PublishListHandlerStruct) ParseParameter() error {
 	return nil
 }
 
-func (q *PublishListHandlerStruct) SendError(msg string) {
+func (q *CommentListHandlerStruct) SendError(msg string) {
 	q.JSON(http.StatusOK, CommonResponse{
 		StatusCode: 1,
 		StatusMsg:  msg,
 	})
 }
 
-func (q *PublishListHandlerStruct) SendOk(info *service.PublishListResponse) {
-	q.JSON(http.StatusOK, PublishListResponses{
+func (q *CommentListHandlerStruct) SendOk(info *service.CommentListResponse) {
+	q.JSON(http.StatusOK, CommentListResponses{
 		CommonResponse: CommonResponse{
 			StatusCode: 0,
 			StatusMsg:  config.SUCCESS_MSG,
 		},
-		PublishListResponse: info,
+		CommentListResponse: info,
 	})
 }

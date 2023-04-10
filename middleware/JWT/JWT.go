@@ -2,9 +2,13 @@ package JWT
 
 import (
 	"androidProject2/config"
+	"androidProject2/middleware/Bcrypt"
+	model2 "androidProject2/model/db"
+	model "androidProject2/model/user"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,18 +20,18 @@ var cnt = 0
 
 type MyClaims struct {
 	UserId   uint
-	UserName string
 	PassWord string
 	jwt.StandardClaims
 }
 
-// GetToken从userid变成Token
+// GetToken从userid和password变成Token
 
-func GetToken(userid uint) (string, error) {
+func GetToken(userid uint, password string) (string, error) {
 	cnt++
 	//创建一个我们自己的声明
 	myClaims := &MyClaims{
-		UserId: userid,
+		UserId:   userid,
+		PassWord: password,
 		StandardClaims: jwt.StandardClaims{
 			NotBefore: time.Now().Unix() - 60,               //什么时间生效
 			ExpiresAt: time.Now().Add(2 * time.Hour).Unix(), //只有2小时的有效时间
@@ -125,6 +129,25 @@ func JWTMiddleware() gin.HandlerFunc {
 		//	})
 		//}
 
+		//判断UserId和Password是否正确，Password传入的是明文，去和数据库中对比
+		var UserDao *model.UserDao
+		var user model2.User
+		log.Println(claim.UserId, claim.PassWord)
+		if err := UserDao.QueryUserInfoById(claim.UserId, &user); err != nil {
+			c.JSON(http.StatusOK, CommonResponse{
+				StatusCode: 1,
+				StatusMsg:  "token中的用户名或密码不正确1",
+			})
+			c.Abort()
+		}
+		log.Println(user.Password)
+		if !Bcrypt.QueryEqualEncryptAndPassword(user.Password, claim.PassWord) {
+			c.JSON(http.StatusOK, CommonResponse{
+				StatusCode: 1,
+				StatusMsg:  "token中的用户名或密码不正确2",
+			})
+			c.Abort()
+		}
 		c.Set("UserId", claim.UserId)
 		c.Next()
 

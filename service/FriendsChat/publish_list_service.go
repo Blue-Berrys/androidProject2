@@ -7,7 +7,9 @@ import (
 	model "androidProject2/model/user"
 	"androidProject2/util"
 	"errors"
+	"log"
 	"strings"
+	"sync"
 )
 
 type PublishListResponse struct {
@@ -43,15 +45,38 @@ func (q *PublishListFlow) Do() (*PublishListResponse, error) {
 }
 
 func (q *PublishListFlow) checkNum() error {
-	//判断UserId是否合法
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	errChan := make(chan error, 2)
+	defer close(errChan)
+
 	var UserDao = model.NewUserDao()
-	if !UserDao.QueryUserExistByUserId(q.UserId) {
-		return errors.New("token用户不存在")
+
+	go func() {
+		wg.Done()
+		//判断UserId是否合法
+		if !UserDao.QueryUserExistByUserId(q.UserId) {
+			errStr := "token用户不存在"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	go func() {
+		wg.Done()
+		//判断SeenId是否合法
+		if q.SeenId != 0 && !UserDao.QueryUserExistByUserId(q.SeenId) {
+			errStr := "传入的user_id被看的人id不存在"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
-	//判断SeenId是否合法
-	if q.SeenId != 0 && !UserDao.QueryUserExistByUserId(q.SeenId) {
-		return errors.New("传入的user_id被看的人id不存在")
-	}
+
 	return nil
 }
 
@@ -75,7 +100,7 @@ func (q *PublishListFlow) prepareData() error {
 		if err := UserDao.QueryUserInfoById(FriendsChat.UserId, &dbUser); err != nil {
 			return err
 		}
-		//构造model.user
+		//构造util.user
 		modelUser := &util.User{
 			Id:              dbUser.ID,
 			Name:            dbUser.UserName,

@@ -56,9 +56,9 @@ func (u *LikeDao) SubOneLikeByFriendschatIdAndUserId(FriendschatId, UserId uint)
 }
 
 // 查看视频点赞总数
-func (u *LikeDao) QueryLenFavorFriendschatListByFriendschatId(FriendschatId int64) (int, error) {
+func (u *LikeDao) QueryLenFavorFriendschatListByFriendsChatId(FriendsChatId uint) (int, error) {
 	var likeList *[]*model.Like
-	err := model.DB.Where("FriendschatId=?", FriendschatId).Find(&likeList).Error
+	err := model.DB.Where("friends_chat_id=?", FriendsChatId).Find(&likeList).Error
 	if err != nil {
 		return 0, err
 	}
@@ -66,4 +66,14 @@ func (u *LikeDao) QueryLenFavorFriendschatListByFriendschatId(FriendschatId int6
 		return 0, errors.New("没有人给这个视频点赞")
 	}
 	return len(*likeList), nil
+}
+
+// 根据friendsChatId查点赞的所有信息
+func (u *LikeDao) QueryAllLikeInfoByFiendsChatId(FriendsChatId uint, likelist *[]*model.Like) error {
+	return model.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("friends_chat_id=?", FriendsChatId).Find(&likelist).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }

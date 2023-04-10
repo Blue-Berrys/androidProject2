@@ -1,8 +1,8 @@
 package service
 
 import (
+	"androidProject2/cache/minio"
 	"androidProject2/config"
-	"androidProject2/middleware/minio"
 	model2 "androidProject2/model/db"
 	model "androidProject2/model/user"
 	"androidProject2/util"
@@ -98,13 +98,20 @@ func (q *QueryUserInfoFlow) prepareData() error {
 		return err
 	}
 
+	if dbUser.BackgroundImage != "" {
+		dbUser.BackgroundImage = config.Miniourl + dbUser.BackgroundImage
+	}
+	if dbUser.Avatar != "" {
+		dbUser.Avatar = config.Miniourl + dbUser.Avatar
+	}
+
 	q.data = &util.User{
 		Id:              dbUser.ID,
 		Name:            dbUser.UserName,
 		Signature:       dbUser.Signature,
 		WorkCount:       dbUser.WorkCount,
-		BackGroundImage: config.Miniourl + dbUser.BackgroundImage,
-		Avatar:          config.Miniourl + dbUser.Avatar,
+		BackGroundImage: dbUser.BackgroundImage,
+		Avatar:          dbUser.Avatar,
 	}
 
 	return nil

@@ -6,6 +6,7 @@ import (
 	model2 "androidProject2/model/db"
 	model "androidProject2/model/user"
 	"errors"
+	"log"
 )
 
 type RegisterResponse struct {
@@ -63,17 +64,18 @@ func (q *QueryUserRegisterFlow) prepareData() error {
 	if exist {
 		return errors.New("用户名已存在，请重新输入用户名")
 	}
-
-	q.password = Bcrypt.EncryptionByPassword(q.password)
+	befPassword := q.password
+	q.password = Bcrypt.EncryptionByPassword(q.password) //生成加盐后密码
 
 	//增加这个用户
 	user := model2.User{UserName: q.username, Password: q.password}
 	if err := userRegisterDao.AddUserInfo(&user); err != nil {
 		return err
 	}
-
+	q.userId = int64(user.ID)
+	log.Println("q.userId:", q.userId)
 	//颁发token
-	token, err := JWT.GetToken(uint(q.userId))
+	token, err := JWT.GetToken(uint(q.userId), befPassword)
 	if err != nil {
 		return err
 	}

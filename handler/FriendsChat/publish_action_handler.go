@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"sync"
 )
 
 type PublishActionResponses struct {
@@ -49,24 +50,44 @@ func (q *PublishActionHandlerStruct) Do() {
 }
 
 func (q *PublishActionHandlerStruct) ParseParameter() error {
-	//获取user_id
-	rawUserId, _ := q.Get("UserId")
-	log.Println("tokenId: ", rawUserId)
-	UserId, ok := rawUserId.(uint)
-	q.UserId = UserId
-	if !ok {
-		return errors.New("ParseUserId Failed") //创建错误
-	}
+	wg := sync.WaitGroup{}
+	wg.Add(3)
 
-	content := q.PostForm("content")
-	q.Content = content
+	errChan := make(chan error, 3)
+	defer close(errChan)
 
-	actionTypeStr := q.PostForm("action_type")
-	action_type, err := strconv.ParseInt(actionTypeStr, 10, 64)
-	q.ActionType = int(action_type)
-	if err != nil {
-		return errors.New("传入的action_type不是整型")
-	}
+	go func() {
+		defer wg.Done()
+		//获取user_id
+		rawUserId, _ := q.Get("UserId")
+		log.Println("tokenId: ", rawUserId)
+		UserId, ok := rawUserId.(uint)
+		if !ok {
+			errStr := "ParseUserId Failed"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+		q.UserId = UserId
+	}()
+
+	go func() {
+		defer wg.Done()
+		content := q.PostForm("content")
+		q.Content = content
+	}()
+
+	go func() {
+		defer wg.Done()
+		actionTypeStr := q.PostForm("action_type")
+		action_type, err := strconv.ParseInt(actionTypeStr, 10, 64)
+		if err != nil {
+			errStr := "action_type不是整型"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+		q.ActionType = int(action_type)
+	}()
+	wg.Wait()
 
 	//有图片
 	if q.ActionType == 1 {

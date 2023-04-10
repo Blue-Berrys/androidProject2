@@ -20,3 +20,15 @@ type FriendsChat struct {
 	Content       string `json:"content"`
 	CreateDate    string `json:"create_date"`
 }
+
+type Like struct {
+	Id   uint `json:"id"`
+	User `json:"user"`
+}
+
+type Comment struct {
+	Id         uint `json:"id"`
+	User       `json:"user"`
+	Content    string `json:"content"`
+	CreateDate string `json:"create_date"`
+}

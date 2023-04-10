@@ -54,6 +54,7 @@ func (q *LikeState) Parameters() error {
 	if !UserDao.QueryUserExistByUserId(q.UserId) {
 		return errors.New("User Not Exists")
 	}
+	//根据FriendsId查询这条朋友圈是否存在
 	var FriendsChatDao = model3.NewFriendsChatDao()
 	if !FriendsChatDao.ExistsFriendsChatById(q.FriendsChatId) {
 		return errors.New("FriendsChat Not Exists")
