@@ -2,6 +2,7 @@ package Redis
 
 import (
 	"fmt"
+	"log"
 	"testing"
 )
 
@@ -54,4 +55,11 @@ func TestGetLikeState(t *testing.T) {
 		return
 	}
 	fmt.Println(state)
+}
+
+func TestRedisDao_SubOneLikeNumByfriendschatId(t *testing.T) {
+	friendsChatId := 1
+	if err := NewRedisDao().SubOneLikeNumByfriendschatId(uint(friendsChatId)); err != nil {
+		log.Println(err)
+	}
 }

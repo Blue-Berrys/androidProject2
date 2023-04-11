@@ -88,6 +88,7 @@ func (q *LikeState) Parameters() error {
 			errChan <- errors.New(errStr)
 		}
 	}()
+	wg.Wait()
 
 	if len(errChan) > 0 {
 		return <-errChan
@@ -163,9 +164,9 @@ func (q *LikeState) UnLikeFriendsChat() error {
 	if !ok {
 		return errors.New("you can't cancel like again after you've already disliked it")
 	}
-
+	log.Println("ok", ok)
 	wg := sync.WaitGroup{}
-	wg.Add(3)
+	wg.Add(2)
 
 	errChan := make(chan error, 3)
 	defer close(errChan)

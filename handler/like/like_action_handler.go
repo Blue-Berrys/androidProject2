@@ -85,6 +85,8 @@ func (q *LikeHandler) ParseParameter() error {
 		}
 		q.actionType = int(ActionType)
 	}()
+	
+	wg.Wait()
 
 	if len(errChan) > 0 {
 		return <-errChan
