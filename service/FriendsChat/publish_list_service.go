@@ -13,7 +13,7 @@ import (
 )
 
 type PublishListResponse struct {
-	FriendsChatList []*util.FriendsChat `json:"friendschat,omitempty"`
+	FriendsChatList []*util.FriendsChat `json:"friendschat_list"`
 }
 
 type PublishListFlow struct {
@@ -54,7 +54,7 @@ func (q *PublishListFlow) checkNum() error {
 	var UserDao = model.NewUserDao()
 
 	go func() {
-		wg.Done()
+		defer wg.Done()
 		//判断UserId是否合法
 		if !UserDao.QueryUserExistByUserId(q.UserId) {
 			errStr := "token用户不存在"
@@ -64,7 +64,7 @@ func (q *PublishListFlow) checkNum() error {
 	}()
 
 	go func() {
-		wg.Done()
+		defer wg.Done()
 		//判断SeenId是否合法
 		if q.SeenId != 0 && !UserDao.QueryUserExistByUserId(q.SeenId) {
 			errStr := "传入的user_id被看的人id不存在"
@@ -72,6 +72,8 @@ func (q *PublishListFlow) checkNum() error {
 			errChan <- errors.New(errStr)
 		}
 	}()
+
+	wg.Wait()
 
 	if len(errChan) > 0 {
 		return <-errChan

@@ -5,8 +5,10 @@ import (
 	service "androidProject2/service/Like"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 type LikeHandler struct {
@@ -40,26 +42,54 @@ func (q *LikeHandler) Do() {
 }
 
 func (q *LikeHandler) ParseParameter() error {
-	curUserId, _ := q.Get("UserId") //curUserId 是 interface类型的
-	UserId, ok := curUserId.(uint)  //转uint
-	if !ok {
-		return errors.New("ParseUserId Failed") //创建错误
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+
+	errChan := make(chan error, 3)
+	defer close(errChan)
+
+	go func() {
+		defer wg.Done()
+		curUserId, _ := q.Get("UserId") //curUserId 是 interface类型的
+		UserId, ok := curUserId.(uint)  //转uint
+		if !ok {
+			errStr := "ParseUserId Failed"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+		q.UserId = UserId
+	}()
+
+	go func() {
+		defer wg.Done()
+		//获取FriendsChatId
+		FriendschatIdStr := q.PostForm("friendschat_id")
+		FriendsChatId, err := strconv.ParseInt(FriendschatIdStr, 10, 32)
+		if err != nil {
+			errStr := "ParseFriendsChatId Failed"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+		q.FriendsChatId = uint(FriendsChatId)
+	}()
+
+	go func() {
+		defer wg.Done()
+		//获取actionType
+		strActionType := q.PostForm("action_type")
+		ActionType, err := strconv.ParseInt(strActionType, 10, 32)
+		if err != nil {
+			errStr := "ParseActionType Failed"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+		q.actionType = int(ActionType)
+	}()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
-	//获取FriendsChatId
-	FriendschatIdStr := q.PostForm("friendschat_id")
-	FriendsChatId, err := strconv.ParseInt(FriendschatIdStr, 10, 32)
-	if err != nil {
-		return errors.New("ParseFriendsChatId Failed")
-	}
-	//获取actionType
-	strActionType := q.PostForm("action_type")
-	ActionType, err := strconv.ParseInt(strActionType, 10, 32)
-	if err != nil {
-		return errors.New("ParseActionType Failed")
-	}
-	q.actionType = int(ActionType)
-	q.FriendsChatId = uint(FriendsChatId)
-	q.UserId = UserId
+
 	return nil
 }
 

@@ -7,9 +7,9 @@ import (
 	model "androidProject2/model/user"
 	"androidProject2/util"
 	"errors"
-	"fmt"
 	"log"
 	"mime/multipart"
+	"sync"
 )
 
 type InfoResponse struct {
@@ -52,21 +52,49 @@ func (q *QueryUserInfoFlow) Do() (*InfoResponse, error) {
 }
 
 func (q *QueryUserInfoFlow) checkNum() error {
-	//查action_type是否只有1或2
-	if q.action_type != 1 && q.action_type != 2 {
-		return errors.New("action_type不是1和2，输入错误")
-	}
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+
+	errChan := make(chan error, 3)
+	defer close(errChan)
+
+	go func() {
+		defer wg.Done()
+		//查action_type是否只有1或2
+		if q.action_type != 1 && q.action_type != 2 {
+			errStr := "action_type不是1和2，输入错误"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
 	//查询用户id是否在数据库中
 	var UserDao = model.NewUserDao()
-	fmt.Println(q.UserId, q.SeenId)
-	if q.UserId == 0 || !UserDao.QueryUserExistByUserId(q.UserId) {
-		return errors.New("UserId用户不存在")
+	go func() {
+		defer wg.Done()
+		if q.UserId == 0 || !UserDao.QueryUserExistByUserId(q.UserId) {
+			errStr := "UserId用户不存在"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if q.SeenId == 0 || !UserDao.QueryUserExistByUserId(q.SeenId) {
+			errStr := "被看的用户不存在"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	wg.Wait()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
-	if q.SeenId == 0 || !UserDao.QueryUserExistByUserId(q.SeenId) {
-		return errors.New("被看的用户不存在")
-	}
+
 	q.modify = false
-	log.Println("action_type:", q.UserId, q.SeenId, q.action_type)
 	//自己看自己并且要修改
 	if q.UserId == q.SeenId && q.action_type == 1 {
 		q.modify = true
@@ -79,16 +107,35 @@ func (q *QueryUserInfoFlow) prepareData() error {
 	var UserDao = model.NewUserDao()
 	//保存到数据库
 	var dbUser = model2.User{}
-	log.Println("modify:", q.modify)
 	//修改
 	if q.modify {
-		if err := minio.ImageToMinio(q.avatar, q.AvatarName); err != nil {
-			return err
+		wg := sync.WaitGroup{}
+		wg.Add(2)
+
+		errChan := make(chan error, 2)
+		defer close(errChan)
+
+		go func() {
+			defer wg.Done()
+			if err := minio.ImageToMinio(q.avatar, q.AvatarName); err != nil {
+				log.Println(err)
+				errChan <- err
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+			if err := minio.ImageToMinio(q.background_image, q.BackgroundImageName); err != nil {
+				log.Println(err)
+				errChan <- err
+			}
+		}()
+
+		wg.Wait()
+		if len(errChan) > 0 {
+			return <-errChan
 		}
-		if err := minio.ImageToMinio(q.background_image, q.BackgroundImageName); err != nil {
-			return err
-		}
-		log.Println("9999")
+
 		if err := UserDao.UpdateUserInfo(&dbUser, q.SeenId, q.signature, q.AvatarName, q.BackgroundImageName); err != nil {
 			return err
 		}

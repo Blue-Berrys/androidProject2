@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"sync"
 )
 
 type UserInfoResponse struct {
@@ -54,40 +55,67 @@ func (q *InfoHandler) Do() {
 }
 
 func (q *InfoHandler) ParseParameter() error {
-	//获取user_id
-	rawUserId, _ := q.Get("UserId")
-	log.Println("tokenId: ", rawUserId)
-	UserId, ok := rawUserId.(uint)
-	if !ok {
-		return errors.New("ParseUserId Failed") //创建错误
-	}
-	q.userId = UserId
+	wg := sync.WaitGroup{}
+	wg.Add(3)
 
-	//被看的人id
-	SeenIdStr := q.PostForm("user_id")
-	SeenId, err := strconv.ParseInt(SeenIdStr, 10, 64)
-	if err != nil {
-		errors.New("传入的user_id不是整型")
-	}
-	q.SeenId = uint(SeenId)
+	errChan := make(chan error, 3)
+	defer close(errChan)
 
-	actionTypeStr := q.PostForm("action_type")
-	action_type, err := strconv.ParseInt(actionTypeStr, 10, 64)
-	q.action_type = int(action_type)
-	if err != nil {
-		errors.New("传入的action_type不是整型")
+	go func() {
+		defer wg.Done()
+		//获取user_id
+		rawUserId, _ := q.Get("UserId")
+		log.Println("tokenId: ", rawUserId)
+		UserId, ok := rawUserId.(uint)
+		if !ok {
+			errStr := "ParseUserId Failed"
+			log.Println(errStr)
+			errChan <- errors.New(errStr) //创建错误
+		}
+		q.userId = UserId
+	}()
+
+	go func() {
+		defer wg.Done()
+		//被看的人id
+		SeenIdStr := q.PostForm("user_id")
+		SeenId, err := strconv.ParseInt(SeenIdStr, 10, 64)
+		if err != nil {
+			errStr := "传入的user_id不是整型"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+		q.SeenId = uint(SeenId)
+	}()
+
+	go func() {
+		defer wg.Done()
+		actionTypeStr := q.PostForm("action_type")
+		action_type, err := strconv.ParseInt(actionTypeStr, 10, 64)
+		q.action_type = int(action_type)
+		if err != nil {
+			errStr := "传入的action_type不是整型"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	wg.Wait()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
 
-	if action_type == 1 {
+	if q.action_type == 1 {
 		var signature string
 		var avatar *multipart.FileHeader
 		var background_image *multipart.FileHeader
 		signature = q.PostForm("signature")
-		avatar, err = q.FormFile("avatar")
+		avatar, err := q.FormFile("avatar")
 		if err != nil {
 			return err
 		}
-		background_image, err := q.FormFile("background_image")
+		background_image, err = q.FormFile("background_image")
 		if err != nil {
 			return err
 		}
@@ -107,7 +135,6 @@ func (q *InfoHandler) ParseParameter() error {
 		q.BackgroundImageName = ""
 		q.AvatarName = ""
 	}
-	log.Println("token_id:", UserId, "SeenId", SeenId)
 	return nil
 }
 

@@ -4,6 +4,7 @@ import (
 	model "androidProject2/model/db"
 	"errors"
 	"gorm.io/gorm"
+	"log"
 	"sync"
 )
 
@@ -54,4 +55,28 @@ func (u *CommentDao) DeleteCommentByCommentId(CommentId uint) error {
 		}
 		return nil
 	})
+}
+
+// 根据评论Id查询评论是否存在
+func (u *CommentDao) IsExistsCommentByCommentId(CommentId uint) bool {
+	var comment *model.Comment
+	if err := model.DB.Where("id=?", CommentId).First(&comment).Error; err != nil {
+		log.Println(err)
+	}
+	if comment.ID == 0 {
+		return false
+	}
+	return true
+}
+
+// 根据评论Id和朋友圈Id查询是否存在这个记录
+func (u *CommentDao) IsCorrectCommentIdAndCommentId(FriendsChatId, CommentId uint) bool {
+	var comment *model.Comment
+	if err := model.DB.Where("id=?", CommentId).Where("friend_chat_id=?", FriendsChatId).First(&comment).Error; err != nil {
+		log.Println(err)
+	}
+	if comment.ID == 0 {
+		return false
+	}
+	return true
 }

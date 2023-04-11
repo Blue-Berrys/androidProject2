@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 type LikeListResponse struct {
@@ -37,27 +38,50 @@ func (q *LikeListHandlerStruct) Do() {
 	info, err := service.LikeList(q.UserId, q.FriendsChatId)
 	if err != nil {
 		q.SendError(err.Error())
+		return
 	}
 	q.SendOk(info)
 }
 
 func (q *LikeListHandlerStruct) ParseParameter() error {
+	wg := sync.WaitGroup{}
+	wg.Add(2)
 
-	//获取user_id
-	rawUserId, _ := q.Get("UserId")
-	log.Println("tokenId: ", rawUserId)
-	UserId, ok := rawUserId.(uint)
-	q.UserId = UserId
-	log.Println("q.UserId:   ", q.UserId)
-	if !ok {
-		return errors.New("ParseUserId Failed") //创建错误
+	errChan := make(chan error, 2)
+	defer close(errChan)
+
+	go func() {
+		defer wg.Done()
+		//获取user_id
+		rawUserId, _ := q.Get("UserId")
+		log.Println("tokenId: ", rawUserId)
+		UserId, ok := rawUserId.(uint)
+		q.UserId = UserId
+		if !ok {
+			errStr := "ParseUserId Failed"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		FriendsChatIdStr := q.PostForm("friendschat_id")
+		FriendsChatId, err := strconv.ParseInt(FriendsChatIdStr, 10, 64)
+		if err != nil {
+			errStr := "传入的friendschat_id不是整型"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+		q.FriendsChatId = uint(FriendsChatId)
+	}()
+
+	wg.Wait()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
-	FriendsChatIdStr := q.PostForm("friendschat_id")
-	FriendsChatId, err := strconv.ParseInt(FriendsChatIdStr, 10, 64)
-	if err != nil {
-		return errors.New("传入的friendschat_id不是整型")
-	}
-	q.FriendsChatId = uint(FriendsChatId)
+
 	return nil
 }
 

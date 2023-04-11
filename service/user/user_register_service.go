@@ -7,6 +7,7 @@ import (
 	model "androidProject2/model/user"
 	"errors"
 	"log"
+	"sync"
 )
 
 type RegisterResponse struct {
@@ -45,14 +46,43 @@ func (q *QueryUserRegisterFlow) Do() (*RegisterResponse, error) {
 }
 
 func (q *QueryUserRegisterFlow) checkNum() error {
-	if q.username == "" {
-		return errors.New("用户名为空")
-	}
-	if q.password == "" {
-		return errors.New("密码为空")
-	}
-	if len(q.username) > MaxUserNameLen {
-		return errors.New("用户名太长")
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+
+	errChan := make(chan error, 3)
+	defer close(errChan)
+
+	go func() {
+		defer wg.Done()
+		if q.username == "" {
+			errStr := "用户名为空"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if q.password == "" {
+			errStr := "密码为空"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if len(q.username) > MaxUserNameLen {
+			errStr := "用户名太长"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	wg.Wait()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
 	return nil
 }

@@ -7,6 +7,8 @@ import (
 	model "androidProject2/model/user"
 	"androidProject2/util"
 	"errors"
+	"log"
+	"sync"
 )
 
 type LikeListsResponse struct {
@@ -42,15 +44,38 @@ func (q *LikeListFlow) Do() (*LikeListsResponse, error) {
 }
 
 func (q *LikeListFlow) checkNum() error {
-	//判断UserId是否合法
-	var UserDao = model.NewUserDao()
-	if !UserDao.QueryUserExistByUserId(q.UserId) {
-		return errors.New("token用户不存在")
-	}
-	//判断friendschat_id是否合法
-	var FriendsChatDao = model2.NewFriendsChatDao()
-	if !FriendsChatDao.ExistsFriendsChatById(q.FriendsChatId) {
-		return errors.New("填入的FriendsChatId不存在")
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	errChan := make(chan error, 2)
+	defer close(errChan)
+
+	go func() {
+		defer wg.Done()
+		//判断UserId是否合法
+		var UserDao = model.NewUserDao()
+		if !UserDao.QueryUserExistByUserId(q.UserId) {
+			errStr := "token用户不存在"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		//判断friendschat_id是否合法
+		var FriendsChatDao = model2.NewFriendsChatDao()
+		if !FriendsChatDao.ExistsFriendsChatById(q.FriendsChatId) {
+			errStr := "填入的FriendsChatId不存在"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	wg.Wait()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
 	return nil
 }

@@ -95,7 +95,7 @@ func (q *CommentActionFlow) prepareData() error {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
-	errChan := make(chan error, 2)
+	errChan := make(chan error, 4)
 	defer close(errChan)
 
 	var UserDao = model.NewUserDao()
@@ -126,6 +126,18 @@ func (q *CommentActionFlow) prepareData() error {
 		go func() {
 			defer wg.Done()
 			var CommentDao = model4.NewCommentDao()
+			//需要判断是否存在这条评论ID是否存在
+			if !CommentDao.IsExistsCommentByCommentId(q.CommentId) {
+				errStr := "评论的Id不存在"
+				log.Println(errStr)
+				errChan <- errors.New(errStr)
+			}
+			//判断删除的评论ID确实是这个朋友圈ID的
+			if !CommentDao.IsCorrectCommentIdAndCommentId(q.FriendsChatId, q.CommentId) {
+				errStr := "评论的Id和朋友圈Id不对应"
+				log.Println(errStr)
+				errChan <- errors.New(errStr)
+			}
 			if err := CommentDao.DeleteCommentByCommentId(q.CommentId); err != nil {
 				log.Println(err)
 				errChan <- err

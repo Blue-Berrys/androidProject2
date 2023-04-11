@@ -6,6 +6,8 @@ import (
 	model2 "androidProject2/model/like"
 	model "androidProject2/model/user"
 	"errors"
+	"log"
+	"sync"
 )
 
 const (
@@ -49,20 +51,48 @@ func (q *LikeState) Do() error {
 }
 
 func (q *LikeState) Parameters() error {
-	//根据UserId查询用户是否存在
-	var UserDao = model.NewUserDao()
-	if !UserDao.QueryUserExistByUserId(q.UserId) {
-		return errors.New("User Not Exists")
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+
+	errChan := make(chan error, 3)
+	defer close(errChan)
+
+	go func() {
+		defer wg.Done()
+		//根据UserId查询用户是否存在
+		var UserDao = model.NewUserDao()
+		if !UserDao.QueryUserExistByUserId(q.UserId) {
+			errStr := "User Not Exists"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		//根据FriendsId查询这条朋友圈是否存在
+		var FriendsChatDao = model3.NewFriendsChatDao()
+		if !FriendsChatDao.ExistsFriendsChatById(q.FriendsChatId) {
+			errStr := "FriendsChat Not Exists"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		//判断actionType是否合法
+		if q.actionType != LIKE && q.actionType != DISLIKE {
+			errStr := "actionType illegal"
+			log.Println(errStr)
+			errChan <- errors.New(errStr)
+		}
+	}()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
-	//根据FriendsId查询这条朋友圈是否存在
-	var FriendsChatDao = model3.NewFriendsChatDao()
-	if !FriendsChatDao.ExistsFriendsChatById(q.FriendsChatId) {
-		return errors.New("FriendsChat Not Exists")
-	}
-	//判断actionType是否合法
-	if q.actionType != LIKE && q.actionType != DISLIKE {
-		return errors.New("actionType illegal")
-	}
+
 	return nil
 }
 
@@ -79,19 +109,46 @@ func (q *LikeState) LikeFriendsChat() error {
 	if ok {
 		return errors.New("you can't like again after you've already liked it")
 	}
-	//在Mysql里点赞，增加一条记录
-	if err := LikeDao.AddOneLikeByFriendschatIdAndUserId(q.FriendsChatId, q.UserId); err != nil {
-		return err
-	}
-	//在redis里置为喜欢
-	if err := RedisDao.UpdatePostLike(q.UserId, q.FriendsChatId, true); err != nil {
-		return err
-	}
-	//在redis里给这条朋友圈点赞的人数加1
-	if err := RedisDao.AddOneLikeNumByfriendschatId(q.FriendsChatId); err != nil {
-		return err
+
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+
+	errChan := make(chan error, 3)
+	defer close(errChan)
+
+	go func() {
+		defer wg.Done()
+		//在Mysql里点赞，增加一条记录
+		if err := LikeDao.AddOneLikeByFriendschatIdAndUserId(q.FriendsChatId, q.UserId); err != nil {
+			log.Println(err)
+			errChan <- err
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		//在redis里置为喜欢
+		if err := RedisDao.UpdatePostLike(q.UserId, q.FriendsChatId, true); err != nil {
+			log.Println(err)
+			errChan <- err
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		//在redis里给这条朋友圈点赞的人数加1
+		if err := RedisDao.AddOneLikeNumByfriendschatId(q.FriendsChatId); err != nil {
+			log.Println(err)
+			errChan <- err
+		}
+	}()
+
+	wg.Wait()
+	if len(errChan) > 0 {
+		return <-errChan
 	}
 	return nil
+
 }
 func (q *LikeState) UnLikeFriendsChat() error {
 	//先判断这个记录存不存在
@@ -106,17 +163,44 @@ func (q *LikeState) UnLikeFriendsChat() error {
 	if !ok {
 		return errors.New("you can't cancel like again after you've already disliked it")
 	}
-	//在Mysql里取消点赞，减少一条记录
-	if err := LikeDao.SubOneLikeByFriendschatIdAndUserId(q.FriendsChatId, q.UserId); err != nil {
-		return err
+
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+
+	errChan := make(chan error, 3)
+	defer close(errChan)
+
+	go func() {
+		defer wg.Done()
+		//在Mysql里取消点赞，减少一条记录
+		if err := LikeDao.SubOneLikeByFriendschatIdAndUserId(q.FriendsChatId, q.UserId); err != nil {
+			log.Println(err)
+			errChan <- err
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		//在redis里置为喜欢
+		if err := RedisDao.UpdatePostLike(q.UserId, q.FriendsChatId, false); err != nil {
+			log.Println(err)
+			errChan <- err
+		}
+	}()
+
+	go func() {
+		//在redis里给这条朋友圈点赞的人数减1
+		if err := RedisDao.SubOneLikeNumByfriendschatId(q.FriendsChatId); err != nil {
+			log.Println(err)
+			errChan <- err
+		}
+	}()
+
+	wg.Wait()
+
+	if len(errChan) > 0 {
+		return <-errChan
 	}
-	//在redis里置为喜欢
-	if err := RedisDao.UpdatePostLike(q.UserId, q.FriendsChatId, false); err != nil {
-		return err
-	}
-	//在redis里给这条朋友圈点赞的人数减1
-	if err := RedisDao.SubOneLikeNumByfriendschatId(q.FriendsChatId); err != nil {
-		return err
-	}
+
 	return nil
 }
