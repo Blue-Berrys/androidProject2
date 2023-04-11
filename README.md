@@ -1,6 +1,6 @@
 # android Project 2 后端
 
-| ![logo](https://avatars.githubusercontent.com/u/124244470?s=200&v=4) | 安卓课程设计大作业2 后端，使用 Gin 和 Gorm 构建，由 [Blue_Berrys](https://github.com/Blue-Berrys) 开发。 |
+| ![logo](https://avatars.githubusercontent.com/u/124244470?s=200&v=4) | 安卓课程设计大作业2 后端，使用 Gin 和 Gorm 构建，由 [Blue-Berrys](https://github.com/Blue-Berrys) 开发。 |
 | -------------------------------------------------------------------- |------------------------------------------------------------------------------------|
 ## 详细说明文档
 
