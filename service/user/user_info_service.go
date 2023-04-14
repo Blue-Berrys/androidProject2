@@ -20,7 +20,7 @@ type QueryUserInfoFlow struct {
 	UserId              uint
 	SeenId              uint
 	action_type         int
-	signature           string
+	nickname            string
 	avatar              *multipart.FileHeader
 	background_image    *multipart.FileHeader
 	AvatarName          string
@@ -30,12 +30,12 @@ type QueryUserInfoFlow struct {
 	*InfoResponse
 }
 
-func QueryUserInfo(UserId uint, SeenId uint, action_type int, signature string, avatar *multipart.FileHeader, background_image *multipart.FileHeader, AvatarName string, BackgroundImageName string) (*InfoResponse, error) {
-	return NewQueryUserInfo(UserId, SeenId, action_type, signature, avatar, background_image, AvatarName, BackgroundImageName).Do()
+func QueryUserInfo(UserId uint, SeenId uint, action_type int, nickname string, avatar *multipart.FileHeader, background_image *multipart.FileHeader, AvatarName string, BackgroundImageName string) (*InfoResponse, error) {
+	return NewQueryUserInfo(UserId, SeenId, action_type, nickname, avatar, background_image, AvatarName, BackgroundImageName).Do()
 }
 
-func NewQueryUserInfo(Userid uint, SeenId uint, action_type int, signature string, avatar *multipart.FileHeader, background_image *multipart.FileHeader, AvatarName string, BackgroundImageName string) *QueryUserInfoFlow {
-	return &QueryUserInfoFlow{UserId: Userid, SeenId: SeenId, action_type: action_type, signature: signature, avatar: avatar, background_image: background_image, AvatarName: AvatarName, BackgroundImageName: BackgroundImageName}
+func NewQueryUserInfo(Userid uint, SeenId uint, action_type int, nickname string, avatar *multipart.FileHeader, background_image *multipart.FileHeader, AvatarName string, BackgroundImageName string) *QueryUserInfoFlow {
+	return &QueryUserInfoFlow{UserId: Userid, SeenId: SeenId, action_type: action_type, nickname: nickname, avatar: avatar, background_image: background_image, AvatarName: AvatarName, BackgroundImageName: BackgroundImageName}
 }
 
 func (q *QueryUserInfoFlow) Do() (*InfoResponse, error) {
@@ -136,7 +136,7 @@ func (q *QueryUserInfoFlow) prepareData() error {
 			return <-errChan
 		}
 
-		if err := UserDao.UpdateUserInfo(&dbUser, q.SeenId, q.signature, q.AvatarName, q.BackgroundImageName); err != nil {
+		if err := UserDao.UpdateUserInfo(&dbUser, q.SeenId, q.nickname, q.AvatarName, q.BackgroundImageName); err != nil {
 			return err
 		}
 	}
@@ -155,7 +155,7 @@ func (q *QueryUserInfoFlow) prepareData() error {
 	q.data = &util.User{
 		Id:              dbUser.ID,
 		Name:            dbUser.UserName,
-		Signature:       dbUser.Signature,
+		NickName:        dbUser.NickName,
 		WorkCount:       dbUser.WorkCount,
 		BackGroundImage: dbUser.BackgroundImage,
 		Avatar:          dbUser.Avatar,

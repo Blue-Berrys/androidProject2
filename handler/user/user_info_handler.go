@@ -24,7 +24,7 @@ type InfoHandler struct {
 	userId              uint
 	SeenId              uint
 	action_type         int
-	signature           string
+	nickname            string
 	avatar              *multipart.FileHeader
 	background_image    *multipart.FileHeader
 	AvatarName          string
@@ -46,7 +46,7 @@ func (q *InfoHandler) Do() {
 		return
 	}
 
-	info, err := service.QueryUserInfo(q.userId, q.SeenId, q.action_type, q.signature, q.avatar, q.background_image, q.AvatarName, q.BackgroundImageName)
+	info, err := service.QueryUserInfo(q.userId, q.SeenId, q.action_type, q.nickname, q.avatar, q.background_image, q.AvatarName, q.BackgroundImageName)
 	if err != nil {
 		q.SendError(err.Error())
 		return
@@ -107,10 +107,10 @@ func (q *InfoHandler) ParseParameter() error {
 	}
 
 	if q.action_type == 1 {
-		var signature string
+		var nickname string
 		var avatar *multipart.FileHeader
 		var background_image *multipart.FileHeader
-		signature = q.PostForm("signature")
+		nickname = q.PostForm("nickname")
 		avatar, err := q.FormFile("avatar")
 		if err != nil {
 			return err
@@ -121,7 +121,7 @@ func (q *InfoHandler) ParseParameter() error {
 		}
 		q.background_image = background_image
 		q.avatar = avatar
-		q.signature = signature
+		q.nickname = nickname
 		q.AvatarName = uuid.NewV4().String()
 		q.BackgroundImageName = uuid.NewV4().String()
 		avatardst := path.Join("~/imageorepo", q.AvatarName+".jpg")
@@ -131,7 +131,7 @@ func (q *InfoHandler) ParseParameter() error {
 	} else {
 		q.background_image = nil
 		q.avatar = nil
-		q.signature = ""
+		q.nickname = ""
 		q.BackgroundImageName = ""
 		q.AvatarName = ""
 	}

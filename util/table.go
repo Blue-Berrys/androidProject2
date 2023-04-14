@@ -7,7 +7,7 @@ type User struct {
 	Name            string `json:"name"`
 	Avatar          string `json:"avatar"`
 	BackGroundImage string `json:"background_image"`
-	Signature       string `json:"signature"`
+	NickName        string `json:"nickname"`
 	WorkCount       int64  `json:"work_count"`
 }
 

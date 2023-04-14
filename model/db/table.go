@@ -4,9 +4,9 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model             //自带的id是自增id
-	UserName        string //用户昵称
+	UserName        string //用户注册name
 	Password        string
-	Signature       string //个性签名
+	NickName        string //昵称
 	Avatar          string //头像
 	BackgroundImage string //背景图片
 	WorkCount       int64  //用户发布的朋友圈总数

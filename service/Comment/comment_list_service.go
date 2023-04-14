@@ -101,7 +101,7 @@ func (q *CommentListFlow) prepareData() error {
 		modelUser := &util.User{
 			Id:              dbUser.ID,
 			Name:            dbUser.UserName,
-			Signature:       dbUser.Signature,
+			NickName:        dbUser.NickName,
 			WorkCount:       dbUser.WorkCount,
 			BackGroundImage: dbUser.BackgroundImage,
 			Avatar:          dbUser.Avatar,
