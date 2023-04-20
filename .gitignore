@@ -25,3 +25,5 @@ go.work
 temp/
 conf_db.go
 .DS_Store
+**/.DS_Store
+.DS_Store?
