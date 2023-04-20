@@ -160,7 +160,6 @@ func (q *QueryUserInfoFlow) prepareData() error {
 		BackGroundImage: dbUser.BackgroundImage,
 		Avatar:          dbUser.Avatar,
 	}
-
 	return nil
 }
 

@@ -56,7 +56,7 @@ func (q *FriendsChatDao) QueryAllFriendsChat(info *[]*model.FriendsChat) error {
 	})
 }
 
-// 根据id查这一条朋友圈
+// 根据朋友圈id查这一条朋友圈
 func (q *FriendsChatDao) ExistsFriendsChatById(id uint) bool {
 	var friendschat = &model.FriendsChat{}
 	if err := model.DB.Where("id=?", id).First(friendschat).Error; err != nil {
@@ -66,4 +66,27 @@ func (q *FriendsChatDao) ExistsFriendsChatById(id uint) bool {
 		return false
 	}
 	return true
+}
+
+// 根据朋友圈id和用户id查是否存在这条记录
+func (q *FriendsChatDao) ExistsFriendsChatIdAndUserId(userId uint, friendsChatId uint) bool {
+	var friendschat = &model.FriendsChat{}
+	if err := model.DB.Where("id=?", friendsChatId).Where("user_id", userId).First(friendschat).Error; err != nil {
+		log.Println(err)
+	}
+	if friendschat.ID == 0 {
+		return false
+	}
+	return true
+}
+
+// 根据朋友圈id删除这条朋友圈
+func (q *FriendsChatDao) DeleteOneFriendsChatById(id uint) error {
+	var friendschat = &model.FriendsChat{}
+	return model.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(friendschat).Delete("id=?", id).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }

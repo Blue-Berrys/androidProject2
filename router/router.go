@@ -24,6 +24,7 @@ func InitRouter(r *gin.Engine) *gin.Engine {
 	apiRouter.POST("/user/info/", JWT.JWTMiddleware(), handler.UserInfoHandler)
 	apiRouter.POST("/publish/action/", JWT.JWTMiddleware(), handler2.PublishActionHandler)
 	apiRouter.POST("/publish/list/", JWT.JWTMiddleware(), handler2.PublishListHandler)
+	apiRouter.POST("/delete/action/", JWT.JWTMiddleware(), handler2.DeleteFriendChatsHandler)
 
 	// extra apis - I
 	apiRouter.POST("/favorite/action/", JWT.JWTMiddleware(), handler3.LikeActionHandler)
