@@ -20,6 +20,7 @@
   * [FriendsChat](https://github.com/Blue-Berrys/androidProject2/tree/main/handler/FriendsChat) - 与朋友圈相关的handler
     * [publish_action_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/FriendsChat/publish_action_handler.go) - 发布朋友圈的handler
     * [publish_list_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/FriendsChat/publish_list_handler.go) - 朋友圈列表的handler
+    * [delete_action_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/FriendsChat/delete_action_handler.go) - 删除朋友圈的handler
   * [like](https://github.com/Blue-Berrys/androidProject2/tree/main/handler/like) - 与点赞相关的handler
     * [like_action_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/like/like_action_handler.go) - 点赞/取消赞操作的handler
     * [like_list_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/like/like_list_handler.go) - 点赞列表的handler
@@ -56,6 +57,7 @@
   * [FriendsChat](https://github.com/Blue-Berrys/androidProject2/tree/main/service/FriendsChat) - 与朋友圈有关的service
     * [publish_action_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/FriendsChat/publish_action_service.go) - 发布朋友圈的service
     * [publish_list_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/FriendsChat/publish_list_service.go) - 朋友圈列表的service
+    * [delete_action_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/FriendsChat/delete_action_service.go) - 删除朋友圈的service
   * [Like](https://github.com/Blue-Berrys/androidProject2/tree/main/service/Like) - 与点赞有关的service
     * [like_action_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/Like/like_action_service.go) - 点赞/取消赞操作的service
     * [like_list_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/Like/like_list_service.go) - 点赞列表的service
