@@ -65,10 +65,11 @@ func (q *InfoDeleteFriendChats) ParseParameter() error {
 	go func() {
 		defer wg.Done()
 		//获取friendschat_id
-		friendsChatIdStr := q.PostForm("friendchats_id")
+		friendsChatIdStr := q.PostForm("friendschat_id")
+		log.Println("friendsChatIdStr: ", friendsChatIdStr)
 		friendsChatId, err := strconv.ParseInt(friendsChatIdStr, 10, 64)
 		if err != nil {
-			errStr := "action_type不是整型"
+			errStr := "friendschat_id不是整型"
 			log.Println(errStr)
 			errChan <- errors.New(errStr)
 		}

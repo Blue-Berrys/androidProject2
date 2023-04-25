@@ -108,8 +108,8 @@ func (q *PublishListFlow) prepareData() error {
 			Name:            dbUser.UserName,
 			NickName:        dbUser.NickName,
 			WorkCount:       dbUser.WorkCount,
-			BackGroundImage: dbUser.BackgroundImage,
-			Avatar:          dbUser.Avatar,
+			BackGroundImage: config.Miniourl + dbUser.BackgroundImage,
+			Avatar:          config.Miniourl + dbUser.Avatar,
 		}
 		Fields := strings.Fields(FriendsChat.ImageUrl)
 		ImageUrl := ""
