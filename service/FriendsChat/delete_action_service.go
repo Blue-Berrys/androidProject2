@@ -72,9 +72,20 @@ func (q *DeleteResponse) checkNum() error {
 func (q *DeleteResponse) prepareData() error {
 	//判断这一条UserId是否对应FriendsId
 	var FriendsChatDao = model3.NewFriendsChatDao()
-	if !FriendsChatDao.ExistsFriendsChatIdAndUserId(q.UserId, q.FriendChatsId) {
-		return errors.New("你不能删除别人的朋友圈")
+	//根据用户id找这个用户的level
+	var UserDao = model.NewUserDao()
+	level, err := UserDao.QueryLevelByUserId(q.UserId)
+	if err != nil {
+		return err
 	}
+	if level == 0 {
+		return errors.New("你已经被封号了")
+	} else if level == 1 {
+		if !FriendsChatDao.ExistsFriendsChatIdAndUserId(q.UserId, q.FriendChatsId) {
+			return errors.New("你不能删除别人的朋友圈")
+		}
+	}
+	//level=2可以删全部
 
 	//删除这条朋友圈
 	if err := FriendsChatDao.DeleteOneFriendsChatById(q.FriendChatsId); err != nil {

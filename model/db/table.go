@@ -9,6 +9,7 @@ type User struct {
 	NickName        string //昵称
 	Avatar          string //头像
 	BackgroundImage string //背景图片
+	Level           int    //等级，0-封号，1-普通用户，2-管理员
 	WorkCount       int64  //用户发布的朋友圈总数
 
 	//FriendsChats []FriendsChat

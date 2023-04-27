@@ -113,3 +113,31 @@ func (u *UserDao) AddOneWorkCountByUserId(user *model.User, userId uint, workcou
 		return nil
 	})
 }
+
+func (u *UserDao) QueryLevelByUserId(userid uint) (int, error) {
+	user := model.User{}
+	if err := model.DB.Where("id=?", userid).First(&user).Error; err != nil {
+		return 0, err
+	}
+	return user.Level, nil
+}
+
+// 根据level查询用户列表
+func (u *UserDao) QueryUserInfoByLevel(level int, users *[]*model.User) error {
+	return model.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("level=?", level).Find(&users).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (u *UserDao) SetUserLevelByUserId(userid uint, level int) error {
+	var user *model.User
+	return model.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&user).Where("id=?", userid).Update("level", level).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}

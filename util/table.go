@@ -8,6 +8,7 @@ type User struct {
 	Avatar          string `json:"avatar"`
 	BackGroundImage string `json:"background_image"`
 	NickName        string `json:"nickname"`
+	Level           int    `json:"level"`
 	WorkCount       int64  `json:"work_count"`
 }
 

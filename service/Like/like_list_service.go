@@ -102,6 +102,7 @@ func (q *LikeListFlow) prepareData() error {
 			WorkCount:       dbUser.WorkCount,
 			BackGroundImage: dbUser.BackgroundImage,
 			Avatar:          dbUser.Avatar,
+			Level:           dbUser.Level,
 		}
 		//构造util.Like
 		onelike := &util.Like{

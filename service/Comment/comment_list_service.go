@@ -105,6 +105,7 @@ func (q *CommentListFlow) prepareData() error {
 			WorkCount:       dbUser.WorkCount,
 			BackGroundImage: dbUser.BackgroundImage,
 			Avatar:          dbUser.Avatar,
+			Level:           dbUser.Level,
 		}
 		//构造util.Comment
 		Comment := &util.Comment{

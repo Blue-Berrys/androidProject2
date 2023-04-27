@@ -98,7 +98,7 @@ func (q *QueryUserRegisterFlow) prepareData() error {
 	q.password = Bcrypt.EncryptionByPassword(q.password) //生成加盐后密码
 
 	//增加这个用户
-	user := model2.User{UserName: q.username, Password: q.password}
+	user := model2.User{UserName: q.username, Password: q.password, Level: 1}
 	if err := userRegisterDao.AddUserInfo(&user); err != nil {
 		return err
 	}

@@ -158,6 +158,7 @@ func (q *QueryUserInfoFlow) prepareData() error {
 		NickName:        dbUser.NickName,
 		WorkCount:       dbUser.WorkCount,
 		BackGroundImage: dbUser.BackgroundImage,
+		Level:           dbUser.Level,
 		Avatar:          dbUser.Avatar,
 	}
 	return nil

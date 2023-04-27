@@ -108,6 +108,7 @@ func (q *PublishListFlow) prepareData() error {
 			Name:            dbUser.UserName,
 			NickName:        dbUser.NickName,
 			WorkCount:       dbUser.WorkCount,
+			Level:           dbUser.Level,
 			BackGroundImage: config.Miniourl + dbUser.BackgroundImage,
 			Avatar:          config.Miniourl + dbUser.Avatar,
 		}

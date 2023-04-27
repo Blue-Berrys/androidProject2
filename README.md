@@ -62,6 +62,7 @@
     * [like_action_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/Like/like_action_service.go) - 点赞/取消赞操作的service
     * [like_list_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/Like/like_list_service.go) - 点赞列表的service
   * [user](https://github.com/Blue-Berrys/androidProject2/tree/main/service/user) - 与用户有关的service
+    * [level_action_service.go]()
     * [user_info_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/user/user_info_service.go) - 用户信息的service
     * [user_login_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/user/user_login_service.go) - 用户登录的service
     * [user_register_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/user/user_register_service.go) - 用户注册的service
