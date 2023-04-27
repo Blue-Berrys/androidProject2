@@ -25,6 +25,8 @@
     * [like_action_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/like/like_action_handler.go) - 点赞/取消赞操作的handler
     * [like_list_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/like/like_list_handler.go) - 点赞列表的handler
   * [user](https://github.com/Blue-Berrys/androidProject2/tree/main/handler/user) 与用户相关的handler
+    * [level_action_handler](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/user/level_action_handler.go) - 修改用户等级的handler
+    * [level_list_handler](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/user/level_list_handler.go) - 列出不同等级所有用户的handler
     * [user_info_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/user/user_info_handler.go) - 用户信息的handler
     * [user_login_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/user/user_login_handler.go) - 用户登录的handler
     * [user_register_handler.go](https://github.com/Blue-Berrys/androidProject2/blob/main/handler/user/user_regitser_handler.go) - 用户注册的handler
@@ -62,7 +64,8 @@
     * [like_action_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/Like/like_action_service.go) - 点赞/取消赞操作的service
     * [like_list_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/Like/like_list_service.go) - 点赞列表的service
   * [user](https://github.com/Blue-Berrys/androidProject2/tree/main/service/user) - 与用户有关的service
-    * [level_action_service.go]()
+    * [level_action_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/user/level_action_service.go) - 用户等级切换的service
+    * [level_list_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/user/level_list_service.go) - 用户不同等级列表的service
     * [user_info_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/user/user_info_service.go) - 用户信息的service
     * [user_login_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/user/user_login_service.go) - 用户登录的service
     * [user_register_service.go](https://github.com/Blue-Berrys/androidProject2/blob/main/service/user/user_register_service.go) - 用户注册的service
